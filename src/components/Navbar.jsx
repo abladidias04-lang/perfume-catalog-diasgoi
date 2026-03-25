@@ -8,7 +8,7 @@ export default function Navbar({ searchQuery, setSearchQuery, cartCount, onOpenC
           
           <div className="flex-shrink-0 w-full sm:w-auto text-center sm:text-left">
             <span className="text-2xl font-black tracking-tighter text-gray-900">
-              AURA<span className="text-indigo-600">.</span>
+              AQYLZHANPARFUME<span className="text-indigo-600">.</span>
             </span>
           </div>
 
