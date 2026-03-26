@@ -1,21 +1,9 @@
-import { useState, useEffect } from 'react'
 import { Search } from 'lucide-react'
+import { translations } from '../translations'
 
-export default function Navbar({ searchQuery, setSearchQuery, cartCount, onOpenCart }) {
-  const [activeLang, setActiveLang] = useState('kk')
-
-  useEffect(() => {
-    // Сайт ашылғанда қай тіл тұрғанын тексереді
-    if (document.cookie.includes('googtrans=/kk/ru')) {
-      setActiveLang('ru')
-    }
-  }, [])
-
-  // Тілді ауыстыратын функция (Google-ге бұйрық береді)
-  const changeLang = (langCode) => {
-    document.cookie = `googtrans=/kk/${langCode}; path=/`
-    window.location.reload() // Тіл өзгерген соң сайтты жаңартамыз
-  }
+export default function Navbar({ searchQuery, setSearchQuery, cartCount, onOpenCart, lang, setLang }) {
+  // Қазіргі таңдалған тілдің сөздігін аламыз (мысалы, translations['kz'])
+  const t = translations[lang] 
 
   return (
     <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b shadow-sm border-gray-100">
@@ -27,17 +15,17 @@ export default function Navbar({ searchQuery, setSearchQuery, cartCount, onOpenC
               AURA<span className="text-indigo-600">.</span>
             </span>
             
-            {/* БІЗДІҢ ӘДЕМІ "KZ | RU" БАТЫРМАЛАРЫМЫЗ */}
+            {/* ТІЛ АУЫСТЫРУ БАТЫРМАЛАРЫ */}
             <div className="flex bg-gray-100 p-1 rounded-lg sm:ml-6">
               <button 
-                onClick={() => changeLang('kk')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${activeLang === 'kk' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setLang('kz')}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${lang === 'kz' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 KZ
               </button>
               <button 
-                onClick={() => changeLang('ru')}
-                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${activeLang === 'ru' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setLang('ru')}
+                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${lang === 'ru' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 RU
               </button>
@@ -54,7 +42,7 @@ export default function Navbar({ searchQuery, setSearchQuery, cartCount, onOpenC
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-indigo-500 sm:text-sm transition-all"
-                placeholder="Парфюм іздеу..."
+                placeholder={t.search} 
               />
             </div>
 
