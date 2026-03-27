@@ -13,6 +13,9 @@ export default function Home() {
   const [selectedVolumes, setSelectedVolumes] = useState([])
   const [priceFilter, setPriceFilter] = useState('all')
   
+  // ЖАҢА: Жыныс фильтрі
+  const [genderFilter, setGenderFilter] = useState('all')
+  
   const [sortBy, setSortBy] = useState('alphabetical')
   const [isFilterMobileOpen, setIsFilterMobileOpen] = useState(false)
   const [selectedPerfume, setSelectedPerfume] = useState(null)
@@ -28,7 +31,7 @@ export default function Home() {
 
   useEffect(() => {
     setVisibleCount(20)
-  }, [searchQuery, selectedBrands, selectedVolumes, priceFilter, sortBy])
+  }, [searchQuery, selectedBrands, selectedVolumes, priceFilter, genderFilter, sortBy])
 
   async function fetchPerfumes() {
     const { data } = await supabase.from('perfumes').select('*').order('created_at', { ascending: false })
@@ -93,17 +96,21 @@ export default function Home() {
     setSelectedBrands([])
     setSelectedVolumes([])
     setPriceFilter('all')
+    setGenderFilter('all')
   }
 
-  const hasActiveFilters = selectedBrands.length > 0 || selectedVolumes.length > 0 || priceFilter !== 'all'
+  const hasActiveFilters = selectedBrands.length > 0 || selectedVolumes.length > 0 || priceFilter !== 'all' || genderFilter !== 'all'
 
   const filteredPerfumes = perfumes.filter(perfume => {
-    // АҚЫЛДЫ ІЗДЕУ ЖҮЙЕСІ (LOUIS VUITTON AFTERNOON СИЯҚТЫ)
     const searchTerms = searchQuery.toLowerCase().split(' ').filter(Boolean)
-    const searchableText = `${perfume.brand || ''} ${perfume.name || ''} ${perfume.description || ''}`.toLowerCase()
+    // ЖАҢА: Іздеу мәтініне perfume.gender қосылды
+    const searchableText = `${perfume.brand || ''} ${perfume.name || ''} ${perfume.description || ''} ${perfume.gender || ''}`.toLowerCase()
     const matchesSearch = searchTerms.every(term => searchableText.includes(term))
     
-    // БАҒА ДИАПАЗОНДАРЫ (СІЗ СҰРАҒАН)
+    // ЖАҢА: Жынысы бойынша фильтр
+    let matchesGender = true
+    if (genderFilter !== 'all') matchesGender = perfume.gender === genderFilter
+
     let matchesPrice = true
     if (priceFilter === 'range1') matchesPrice = perfume.price >= 7000 && perfume.price <= 9800
     if (priceFilter === 'range2') matchesPrice = perfume.price >= 9800 && perfume.price <= 13600
@@ -115,7 +122,7 @@ export default function Home() {
     let matchesBrand = true
     if (selectedBrands.length > 0) matchesBrand = selectedBrands.includes(perfume.brand)
     
-    return matchesSearch && matchesPrice && matchesVolume && matchesBrand
+    return matchesSearch && matchesPrice && matchesVolume && matchesBrand && matchesGender
   })
 
   const sortedPerfumes = [...filteredPerfumes].sort((a, b) => {
@@ -182,6 +189,32 @@ export default function Home() {
                 {lang === 'kz' ? 'Сүзгіні тазарту' : 'Сбросить фильтры'}
               </button>
             )}
+
+            {/* ЖАҢА: Жыныс бойынша фильтр */}
+            <div>
+              <h3 className="font-bold text-gray-900 mb-3 uppercase tracking-wider text-xs">{t.gender}</h3>
+              <div className="flex flex-col gap-2.5">
+                {[
+                  { id: 'all', label: t.all },
+                  { id: 'Мужской', label: t.men },
+                  { id: 'Женский', label: t.women },
+                  { id: 'Унисекс', label: t.unisex }
+                ].map(opt => (
+                  <label key={opt.id} className="flex items-center gap-3 cursor-pointer group">
+                    <input 
+                      type="radio" 
+                      name="gender"
+                      checked={genderFilter === opt.id}
+                      onChange={() => setGenderFilter(opt.id)}
+                      className="w-4.5 h-4.5 border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                    />
+                    <span className={`text-sm ${genderFilter === opt.id ? 'font-bold text-gray-900' : 'text-gray-600 group-hover:text-gray-900'}`}>{opt.label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <hr className="border-gray-100" />
 
             {availableBrands.length > 0 && (
               <div>
@@ -331,7 +364,10 @@ export default function Home() {
               <img src={selectedPerfume.image_url} alt={selectedPerfume.name} className="w-full h-full object-cover" />
             </div>
             <div className="w-full sm:w-1/2 p-6 sm:p-10 flex flex-col">
-              {selectedPerfume.brand && <p className="text-sm font-black text-indigo-500 uppercase tracking-widest mb-2">{selectedPerfume.brand}</p>}
+              <div className="flex items-center gap-2 mb-2">
+                {selectedPerfume.brand && <p className="text-sm font-black text-indigo-500 uppercase tracking-widest">{selectedPerfume.brand}</p>}
+                {selectedPerfume.gender && <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-md font-medium">{selectedPerfume.gender}</span>}
+              </div>
               <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">{selectedPerfume.name}</h2>
               <p className="text-gray-500 mb-6 font-medium">{selectedPerfume.volume} мл</p>
               <p className="text-3xl font-black text-indigo-600 mb-8">{selectedPerfume.price.toLocaleString('kk-KZ')} ₸</p>

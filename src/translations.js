@@ -24,7 +24,12 @@ export const translations = {
     sortCheap: "Алдымен арзандары",
     sortExpensive: "Алдымен қымбаттары",
     similarProducts: "Сізге мыналар да ұнауы мүмкін",
-    loadMore: "Тағы көрсету"
+    loadMore: "Тағы көрсету",
+    // ЖАҢА ҚОСЫЛҒАНДАР
+    gender: "Кімге арналған:",
+    men: "Мужской",
+    women: "Женский",
+    unisex: "Унисекс"
   },
   ru: {
     search: "Поиск парфюма или бренда...",
@@ -51,6 +56,11 @@ export const translations = {
     sortCheap: "Сначала дешевые",
     sortExpensive: "Сначала дорогие",
     similarProducts: "Вам также может понравиться",
-    loadMore: "Показать еще"
+    loadMore: "Показать еще",
+    // ЖАҢА ҚОСЫЛҒАНДАР
+    gender: "Для кого:",
+    men: "Мужской",
+    women: "Женский",
+    unisex: "Унисекс"
   }
 }

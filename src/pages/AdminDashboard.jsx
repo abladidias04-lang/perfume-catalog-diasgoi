@@ -17,8 +17,11 @@ export default function AdminDashboard() {
   const [price, setPrice] = useState('')
   const [description, setDescription] = useState('')
   const [imageFile, setImageFile] = useState(null)
+  
+  // ЖАҢА: Жынысы (Бастапқыда Унисекс тұрады)
+  const [gender, setGender] = useState('Унисекс')
+  
   const [isSubmitting, setIsSubmitting] = useState(false)
-
   const [editingId, setEditingId] = useState(null)
   const [existingImageUrl, setExistingImageUrl] = useState('')
 
@@ -68,6 +71,7 @@ export default function AdminDashboard() {
     setVolume('')
     setPrice('')
     setDescription('')
+    setGender('Унисекс') // Тазалағанда унисекске қайтады
     setImageFile(null)
     setExistingImageUrl('')
     setShowForm(true)
@@ -80,6 +84,7 @@ export default function AdminDashboard() {
     setVolume(perfume.volume)
     setPrice(perfume.price)
     setDescription(perfume.description || '')
+    setGender(perfume.gender || 'Унисекс') // Базада бар болса сол шығады
     setExistingImageUrl(perfume.image_url)
     setImageFile(null)
     setShowForm(true)
@@ -109,7 +114,8 @@ export default function AdminDashboard() {
         volume: parseInt(volume),
         price: parseInt(price),
         description: description,
-        image_url: finalImageUrl
+        image_url: finalImageUrl,
+        gender: gender // ЖАҢА: Базаға сақтау
       }
 
       if (editingId) {
@@ -131,10 +137,9 @@ export default function AdminDashboard() {
     }
   }
 
-  // ЖАҢА АҚЫЛДЫ ІЗДЕУ ЖҮЙЕСІ (Админ панель үшін)
   const filteredPerfumes = perfumes.filter(p => {
     const searchTerms = searchQuery.toLowerCase().split(' ').filter(Boolean);
-    const searchableText = `${p.brand || ''} ${p.name || ''} ${p.description || ''}`.toLowerCase();
+    const searchableText = `${p.brand || ''} ${p.name || ''} ${p.description || ''} ${p.gender || ''}`.toLowerCase();
     
     return searchTerms.every(term => searchableText.includes(term));
   });
@@ -201,7 +206,11 @@ export default function AdminDashboard() {
                   <img src={p.image_url} alt={p.name} className="w-16 h-16 object-cover rounded-lg bg-gray-100 flex-shrink-0" />
                   <div className="min-w-0 flex-1">
                     {p.brand && <p className="text-[10px] text-indigo-500 font-bold uppercase truncate">{p.brand}</p>}
-                    <h3 className="font-bold text-gray-900 truncate">{p.name}</h3>
+                    <h3 className="font-bold text-gray-900 truncate">
+                      {p.name} 
+                      {/* ЖАҢА: Тізімде жынысын кішкентай етіп көрсету */}
+                      {p.gender && <span className="ml-2 bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-md font-medium">{p.gender}</span>}
+                    </h3>
                     <p className="text-sm text-gray-500 truncate">{p.volume} мл • {p.price.toLocaleString('kk-KZ')} ₸</p>
                   </div>
                 </div>
@@ -236,9 +245,20 @@ export default function AdminDashboard() {
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold mb-1">Бренд немесе Категория</label>
-                <input type="text" value={brand} onChange={e => setBrand(e.target.value)} placeholder="Мысалы: Tom Ford" className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-gray-50" />
+              <div className="flex gap-4">
+                <div className="flex-1">
+                  <label className="block text-sm font-bold mb-1">Бренд / Категория</label>
+                  <input type="text" value={brand} onChange={e => setBrand(e.target.value)} placeholder="Tom Ford" className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-gray-50" />
+                </div>
+                {/* ЖАҢА: Формада Жынысын таңдау */}
+                <div className="flex-1">
+                  <label className="block text-sm font-bold mb-1">Пол</label>
+                  <select value={gender} onChange={e => setGender(e.target.value)} className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-gray-50 outline-none">
+                    <option value="Мужской">Мужской</option>
+                    <option value="Женский">Женский</option>
+                    <option value="Унисекс">Унисекс</option>
+                  </select>
+                </div>
               </div>
 
               <div>
