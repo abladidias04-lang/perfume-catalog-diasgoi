@@ -454,7 +454,7 @@ export default function Home() {
             </a>
             
           </div>
-          <p className="mt-8 text-white/30 text-[10px] font-medium tracking-wide"></p>
+          <p className="mt-8 text-white/30 text-[10px] font-medium tracking-wide">AURA PARFUM © 2024</p>
         </div>
       </footer>
 
