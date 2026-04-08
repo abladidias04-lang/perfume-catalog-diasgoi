@@ -14,7 +14,7 @@ export default function Home() {
   const [priceFilter, setPriceFilter] = useState('all')
   const [genderFilter, setGenderFilter] = useState('all')
   
-  // ЖАҢА: Баға түрі (Бастапқыда "В розницу" тұрады)
+  // ЖАҢА: Баға түрі
   const [priceType, setPriceType] = useState('retail')
   
   const [sortBy, setSortBy] = useState('alphabetical')
@@ -185,19 +185,19 @@ export default function Home() {
         
         <div className="w-full md:hidden flex flex-col gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
           
-          {/* ЖАҢА: Мобильді нұсқадағы В розницу / Оптом батырмасы */}
+          {/* ЖӨНДЕЛДІ: Мобильді нұсқада Оптом мен В розницу орны ауысты */}
           <div className="flex bg-gray-100 p-1 rounded-xl w-full mb-2">
-            <button
-              onClick={() => setPriceType('retail')}
-              className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${priceType === 'retail' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
-            >
-              {t.retail}
-            </button>
             <button
               onClick={() => setPriceType('wholesale')}
               className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${priceType === 'wholesale' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
             >
               {t.wholesale}
+            </button>
+            <button
+              onClick={() => setPriceType('retail')}
+              className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${priceType === 'retail' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              {t.retail}
             </button>
           </div>
 
@@ -340,19 +340,19 @@ export default function Home() {
           <div className="hidden md:flex bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 justify-between items-center gap-4">
             <h1 className="text-2xl font-black whitespace-nowrap">{t.catalog} <span className="text-sm text-gray-500 font-medium ml-2">({sortedPerfumes.length})</span></h1>
             
-            {/* ЖАҢА: Компьютер нұсқасындағы В розницу / Оптом батырмасы */}
+            {/* ЖӨНДЕЛДІ: Компьютер нұсқасында Оптом мен В розницу орны ауысты */}
             <div className="flex bg-gray-100 p-1 rounded-xl mx-auto">
-              <button
-                onClick={() => setPriceType('retail')}
-                className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${priceType === 'retail' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                {t.retail}
-              </button>
               <button
                 onClick={() => setPriceType('wholesale')}
                 className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${priceType === 'wholesale' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 {t.wholesale}
+              </button>
+              <button
+                onClick={() => setPriceType('retail')}
+                className={`px-5 py-2 rounded-lg text-sm font-bold transition-all ${priceType === 'retail' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                {t.retail}
               </button>
             </div>
 
@@ -467,7 +467,6 @@ export default function Home() {
               <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">{selectedPerfume.name}</h2>
               <p className="text-gray-500 mb-6 font-medium">{selectedPerfume.volume} мл</p>
               
-              {/* ЖАҢА: Модальды терезе ішіндегі баға */}
               <p className="text-3xl font-black text-indigo-600 mb-8">{getDisplayPrice(selectedPerfume.price).toLocaleString('kk-KZ')} ₸</p>
               
               <div className="mb-6">
@@ -490,7 +489,6 @@ export default function Home() {
                         </div>
                         <p className="text-xs font-bold text-gray-900 truncate">{sim.name}</p>
                         
-                        {/* ЖАҢА: Ұқсас тауарлар бағасы */}
                         <p className="text-[10px] text-indigo-600 font-bold">{getDisplayPrice(sim.price).toLocaleString('kk-KZ')} ₸</p>
                       </div>
                     ))}
@@ -538,7 +536,6 @@ export default function Home() {
                       {item.brand && <p className="text-[10px] text-indigo-500 font-bold uppercase">{item.brand}</p>}
                       <h4 className="font-bold text-gray-900 leading-tight">{item.name}</h4>
                       
-                      {/* ЖАҢА: Себеттегі баға */}
                       <p className="text-sm text-gray-500 mb-2">{getDisplayPrice(item.price).toLocaleString('kk-KZ')} ₸</p>
                       
                       <div className="flex items-center gap-3">
