@@ -46,6 +46,11 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   
+  // Админ панельдегі іздеу және фильтр үшін
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterGender, setFilterGender] = useState('all');
+  const [visibleCount, setVisibleCount] = useState(20);
+  
   const [formData, setFormData] = useState({
     name: '',
     brand: '',
@@ -184,6 +189,16 @@ export default function AdminDashboard() {
     navigate('/admin');
   };
 
+  // Тауарларды іздеу және фильтрлеу логикасы
+  const filteredPerfumes = perfumes.filter(item => {
+    const matchesSearch = (item.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (item.brand || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGender = filterGender === 'all' || item.gender === filterGender;
+    return matchesSearch && matchesGender;
+  });
+
+  const displayedPerfumes = filteredPerfumes.slice(0, visibleCount);
+
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
       <div className="max-w-4xl mx-auto">
@@ -192,6 +207,7 @@ export default function AdminDashboard() {
           <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium">Шығу</button>
         </div>
 
+        {/* Форма */}
         <div className="bg-white p-6 rounded-lg shadow-md mb-8">
           <h2 className="text-lg font-semibold mb-4 text-gray-700">{editId ? 'Парфюмді өңдеу' : 'Жаңа парфюм қосу'}</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -249,31 +265,71 @@ export default function AdminDashboard() {
           </form>
         </div>
 
+        {/* Тізім және Фильтрлер */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">Барлық тауарлар</h2>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+            <h2 className="text-lg font-semibold text-gray-700">Барлық тауарлар ({filteredPerfumes.length})</h2>
+            
+            {/* Іздеу және Фильтр блогы */}
+            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+              <input 
+                type="text" 
+                placeholder="Атауы немесе бренд..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full sm:w-48 border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+              <select 
+                value={filterGender}
+                onChange={(e) => setFilterGender(e.target.value)}
+                className="w-full sm:w-36 border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              >
+                <option value="all">Барлық жыныс</option>
+                <option value="Мужской">Мужской</option>
+                <option value="Женский">Женский</option>
+                <option value="Унисекс">Унисекс</option>
+              </select>
+            </div>
+          </div>
+
           {loading ? (
-            <p className="text-gray-500 text-sm">Жүктелуде...</p>
+            <p className="text-gray-500 text-sm text-center py-8">Жүктелуде...</p>
+          ) : displayedPerfumes.length === 0 ? (
+            <p className="text-gray-500 text-sm text-center py-8">Тауар табылмады</p>
           ) : (
             <div className="divide-y divide-gray-200">
-              {perfumes.map((item) => (
-                <div key={item.id} className="py-4 flex items-center justify-between gap-4">
+              {displayedPerfumes.map((item) => (
+                <div key={item.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50 px-2 rounded transition-colors">
                   <div className="flex items-center gap-4">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.name} loading="lazy" className="w-14 h-14 object-cover rounded" />
+                      <img src={item.image_url} alt={item.name} loading="lazy" className="w-14 h-14 object-cover rounded shadow-sm" />
                     ) : (
                       <div className="w-14 h-14 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-400">Суретсіз</div>
                     )}
                     <div>
                       <h3 className="font-medium text-gray-800 line-clamp-1">{item.name}</h3>
-                      <p className="text-sm text-gray-500">{item.brand} | {item.volume} мл | {item.price} ₸</p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        <span className="font-semibold text-indigo-600">{item.brand}</span> | {item.volume} мл | {item.price} ₸
+                      </p>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleEdit(item)} className="px-3 py-1 bg-yellow-400 text-yellow-900 rounded text-xs hover:bg-yellow-500">Өңдеу</button>
-                    <button onClick={() => handleDelete(item.id)} className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600">Жою</button>
+                  <div className="flex gap-2 self-end sm:self-auto">
+                    <button onClick={() => handleEdit(item)} className="px-4 py-1.5 bg-yellow-400 text-yellow-900 rounded text-xs font-bold hover:bg-yellow-500 transition-colors">Өңдеу</button>
+                    <button onClick={() => handleDelete(item.id)} className="px-4 py-1.5 bg-red-500 text-white rounded text-xs font-bold hover:bg-red-600 transition-colors">Жою</button>
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+          
+          {visibleCount < filteredPerfumes.length && (
+            <div className="mt-6 flex justify-center">
+              <button 
+                onClick={() => setVisibleCount(prev => prev + 20)}
+                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+              >
+                Тағы көрсету...
+              </button>
             </div>
           )}
         </div>
