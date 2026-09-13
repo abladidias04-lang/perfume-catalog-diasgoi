@@ -46,10 +46,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   
-  // Админ панельдегі іздеу, фильтр және сұрыптау
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGender, setFilterGender] = useState('all');
-  const [sortBy, setSortBy] = useState('new'); // Жаңадан қосылған сұрыптау
+  const [sortBy, setSortBy] = useState('new'); 
   const [visibleCount, setVisibleCount] = useState(20);
   
   const [formData, setFormData] = useState({
@@ -78,8 +77,8 @@ export default function AdminDashboard() {
       setLoading(true);
       const { data, error } = await supabase
         .from('perfumes')
-        .select('id, name, brand, price, volume, gender, description, image_url')
-        .order('id', { ascending: false });
+        .select('id, name, brand, price, volume, gender, description, image_url, created_at')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setPerfumes(data || []);
@@ -190,7 +189,7 @@ export default function AdminDashboard() {
     navigate('/admin');
   };
 
-  // 1. Алдымен тауарларды іздеу және фильтрлеу
+  // Фильтрлеу
   const filteredPerfumes = perfumes.filter(item => {
     const matchesSearch = (item.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (item.brand || '').toLowerCase().includes(searchTerm.toLowerCase());
@@ -198,53 +197,94 @@ export default function AdminDashboard() {
     return matchesSearch && matchesGender;
   });
 
-  // 2. Одан кейін таңдалған сұрыптау бойынша реттеу
+  // Сұрыптау
   const sortedPerfumes = [...filteredPerfumes].sort((a, b) => {
-    if (sortBy === 'new') return b.id - a.id;
-    if (sortBy === 'old') return a.id - b.id;
+    if (sortBy === 'new') return new Date(b.created_at) - new Date(a.created_at);
+    if (sortBy === 'old') return new Date(a.created_at) - new Date(b.created_at);
     if (sortBy === 'az') return (a.name || '').localeCompare(b.name || '');
     if (sortBy === 'za') return (b.name || '').localeCompare(a.name || '');
     return 0;
   });
 
-  // 3. Нәтижені пагинациямен (шектеп) шығару
   const displayedPerfumes = sortedPerfumes.slice(0, visibleCount);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Админ Панель</h1>
-          <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-sm font-medium">Шығу</button>
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8 font-sans">
+      <div className="max-w-5xl mx-auto">
+        
+        {/* Басты тақырып */}
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-black text-gray-900">Админ Панель</h1>
+          <button 
+            onClick={handleLogout} 
+            className="px-5 py-2.5 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 text-sm font-bold transition-colors"
+          >
+            Шығу
+          </button>
         </div>
 
-        {/* Форма */}
-        <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">{editId ? 'Парфюмді өңдеу' : 'Жаңа парфюм қосу'}</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Форма блогы */}
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100 mb-8">
+          <h2 className="text-xl font-black text-gray-900 mb-6">
+            {editId ? 'Парфюмді өңдеу' : 'Жаңа парфюм қосу'}
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Атауы</label>
-                <input type="text" name="name" value={formData.name} onChange={handleInputChange} required className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" />
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">Атауы</label>
+                <input 
+                  type="text" 
+                  name="name" 
+                  value={formData.name} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium" 
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Бренд</label>
-                <input type="text" name="brand" value={formData.brand} onChange={handleInputChange} required className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" />
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">Бренд</label>
+                <input 
+                  type="text" 
+                  name="brand" 
+                  value={formData.brand} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium" 
+                />
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Бағасы (₸)</label>
-                <input type="number" name="price" value={formData.price} onChange={handleInputChange} required className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" />
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">Бағасы (₸)</label>
+                <input 
+                  type="number" 
+                  name="price" 
+                  value={formData.price} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium" 
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Көлемі (мл)</label>
-                <input type="number" name="volume" value={formData.volume} onChange={handleInputChange} required className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500" />
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">Көлемі (мл)</label>
+                <input 
+                  type="number" 
+                  name="volume" 
+                  value={formData.volume} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium" 
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1">Жынысы</label>
-                <select name="gender" value={formData.gender} onChange={handleInputChange} className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500">
+                <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">Жынысы</label>
+                <select 
+                  name="gender" 
+                  value={formData.gender} 
+                  onChange={handleInputChange} 
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium cursor-pointer"
+                >
                   <option value="Мужской">Мужской</option>
                   <option value="Женский">Женский</option>
                   <option value="Унисекс">Унисекс</option>
@@ -253,22 +293,43 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Сипаттамасы</label>
-              <textarea name="description" value={formData.description} onChange={handleInputChange} rows="3" className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500"></textarea>
+              <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">Сипаттамасы</label>
+              <textarea 
+                name="description" 
+                value={formData.description} 
+                onChange={handleInputChange} 
+                rows="3" 
+                className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 block p-3 outline-none transition-all font-medium"
+              ></textarea>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Сурет таңдау</label>
-              <input type="file" accept="image/*" onChange={handleFileChange} className="w-full border p-2 rounded text-sm" />
-              <p className="text-xs text-gray-500 mt-1">* Сурет автоматты түрде сапасы сақталып, жеңілдетіледі.</p>
+              <label className="block text-xs font-bold text-gray-900 uppercase tracking-wider mb-2">Сурет таңдау</label>
+              <input 
+                type="file" 
+                accept="image/*" 
+                onChange={handleFileChange} 
+                className="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:outline-none file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-bold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100 transition-all cursor-pointer" 
+              />
+              <p className="text-[11px] font-medium text-gray-500 mt-2">
+                * Суреттің сапасы сақталып, көлемі автоматты түрде жеңілдетіледі.
+              </p>
             </div>
 
-            <div className="flex gap-2">
-              <button type="submit" disabled={uploading} className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium">
+            <div className="flex gap-3 pt-2">
+              <button 
+                type="submit" 
+                disabled={uploading} 
+                className="px-8 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 disabled:opacity-50 text-sm font-bold shadow-sm transition-all"
+              >
                 {uploading ? 'Жүктелуде...' : editId ? 'Жаңарту' : 'Қосу'}
               </button>
               {editId && (
-                <button type="button" onClick={() => { setEditId(null); setFormData({ name: '', brand: '', price: '', volume: '', gender: 'Унисекс', description: '' }); }} className="px-4 py-2 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400">
+                <button 
+                  type="button" 
+                  onClick={() => { setEditId(null); setFormData({ name: '', brand: '', price: '', volume: '', gender: 'Унисекс', description: '' }); }} 
+                  className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl text-sm font-bold hover:bg-gray-200 transition-all"
+                >
                   Бас тарту
                 </button>
               )}
@@ -276,24 +337,25 @@ export default function AdminDashboard() {
           </form>
         </div>
 
-        {/* Тізім және Фильтрлер */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
-            <h2 className="text-lg font-semibold text-gray-700 whitespace-nowrap">Барлық тауарлар ({sortedPerfumes.length})</h2>
+        {/* Тізім және Фильтрлер блогы */}
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-5">
+            <h2 className="text-xl font-black text-gray-900 whitespace-nowrap">
+              Барлық тауарлар <span className="text-sm text-gray-500 font-medium ml-1">({sortedPerfumes.length})</span>
+            </h2>
             
-            {/* Іздеу, Фильтр және Сұрыптау блогы */}
-            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
               <input 
                 type="text" 
-                placeholder="Атауы немесе бренд..." 
+                placeholder="Іздеу..." 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full sm:w-48 border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full sm:w-48 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 block p-2.5 outline-none font-medium transition-all"
               />
               <select 
                 value={filterGender}
                 onChange={(e) => setFilterGender(e.target.value)}
-                className="w-full sm:w-36 border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-full sm:w-40 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 block p-2.5 outline-none font-medium cursor-pointer transition-all"
               >
                 <option value="all">Барлық жыныс</option>
                 <option value="Мужской">Мужской</option>
@@ -303,7 +365,7 @@ export default function AdminDashboard() {
               <select 
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="w-full sm:w-40 border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+                className="w-full sm:w-44 bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-indigo-500 block p-2.5 outline-none font-medium cursor-pointer transition-all"
               >
                 <option value="new">Ең жаңалары</option>
                 <option value="old">Ескілері</option>
@@ -314,29 +376,51 @@ export default function AdminDashboard() {
           </div>
 
           {loading ? (
-            <p className="text-gray-500 text-sm text-center py-8">Жүктелуде...</p>
+            <div className="text-center py-12 text-gray-500 text-sm font-medium">Жүктелуде...</div>
           ) : displayedPerfumes.length === 0 ? (
-            <p className="text-gray-500 text-sm text-center py-8">Тауар табылмады</p>
+            <div className="text-center py-12 text-gray-500 text-sm font-medium">Тауар табылмады</div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-100">
               {displayedPerfumes.map((item) => (
-                <div key={item.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-gray-50 px-2 rounded transition-colors">
+                <div key={item.id} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
                   <div className="flex items-center gap-4">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.name} loading="lazy" className="w-14 h-14 object-cover rounded shadow-sm" />
+                      <img 
+                        src={item.image_url} 
+                        alt={item.name} 
+                        loading="lazy" 
+                        className="w-16 h-16 object-cover rounded-xl bg-gray-50 border border-gray-100" 
+                      />
                     ) : (
-                      <div className="w-14 h-14 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-400">Суретсіз</div>
+                      <div className="w-16 h-16 bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center text-[10px] text-gray-400 font-medium">
+                        Суретсіз
+                      </div>
                     )}
                     <div>
-                      <h3 className="font-medium text-gray-800 line-clamp-1">{item.name}</h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        <span className="font-semibold text-indigo-600">{item.brand}</span> | {item.volume} мл | {item.price} ₸
+                      {item.brand && (
+                        <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-0.5">
+                          {item.brand}
+                        </p>
+                      )}
+                      <h3 className="font-bold text-gray-900 line-clamp-1">{item.name}</h3>
+                      <p className="text-sm text-gray-500 mt-1 font-medium">
+                        {item.volume} мл | {item.price.toLocaleString('kk-KZ')} ₸
                       </p>
                     </div>
                   </div>
-                  <div className="flex gap-2 self-end sm:self-auto">
-                    <button onClick={() => handleEdit(item)} className="px-4 py-1.5 bg-yellow-400 text-yellow-900 rounded text-xs font-bold hover:bg-yellow-500 transition-colors">Өңдеу</button>
-                    <button onClick={() => handleDelete(item.id)} className="px-4 py-1.5 bg-red-500 text-white rounded text-xs font-bold hover:bg-red-600 transition-colors">Жою</button>
+                  <div className="flex gap-2 self-end sm:self-auto opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <button 
+                      onClick={() => handleEdit(item)} 
+                      className="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors"
+                    >
+                      Өңдеу
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(item.id)} 
+                      className="px-4 py-2 bg-red-50 text-red-500 rounded-lg text-xs font-bold hover:bg-red-100 transition-colors"
+                    >
+                      Жою
+                    </button>
                   </div>
                 </div>
               ))}
@@ -344,10 +428,10 @@ export default function AdminDashboard() {
           )}
           
           {visibleCount < sortedPerfumes.length && (
-            <div className="mt-6 flex justify-center">
+            <div className="mt-8 flex justify-center">
               <button 
                 onClick={() => setVisibleCount(prev => prev + 20)}
-                className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors"
+                className="px-8 py-3.5 border border-gray-200 text-indigo-600 bg-white rounded-xl text-sm font-bold hover:bg-gray-50 shadow-sm transition-all"
               >
                 Тағы көрсету...
               </button>
