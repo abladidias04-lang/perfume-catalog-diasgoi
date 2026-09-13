@@ -46,9 +46,10 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   
-  // Админ панельдегі іздеу және фильтр үшін
+  // Админ панельдегі іздеу, фильтр және сұрыптау
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGender, setFilterGender] = useState('all');
+  const [sortBy, setSortBy] = useState('new'); // Жаңадан қосылған сұрыптау
   const [visibleCount, setVisibleCount] = useState(20);
   
   const [formData, setFormData] = useState({
@@ -189,7 +190,7 @@ export default function AdminDashboard() {
     navigate('/admin');
   };
 
-  // Тауарларды іздеу және фильтрлеу логикасы
+  // 1. Алдымен тауарларды іздеу және фильтрлеу
   const filteredPerfumes = perfumes.filter(item => {
     const matchesSearch = (item.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                           (item.brand || '').toLowerCase().includes(searchTerm.toLowerCase());
@@ -197,7 +198,17 @@ export default function AdminDashboard() {
     return matchesSearch && matchesGender;
   });
 
-  const displayedPerfumes = filteredPerfumes.slice(0, visibleCount);
+  // 2. Одан кейін таңдалған сұрыптау бойынша реттеу
+  const sortedPerfumes = [...filteredPerfumes].sort((a, b) => {
+    if (sortBy === 'new') return b.id - a.id;
+    if (sortBy === 'old') return a.id - b.id;
+    if (sortBy === 'az') return (a.name || '').localeCompare(b.name || '');
+    if (sortBy === 'za') return (b.name || '').localeCompare(a.name || '');
+    return 0;
+  });
+
+  // 3. Нәтижені пагинациямен (шектеп) шығару
+  const displayedPerfumes = sortedPerfumes.slice(0, visibleCount);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 font-sans">
@@ -267,11 +278,11 @@ export default function AdminDashboard() {
 
         {/* Тізім және Фильтрлер */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
-            <h2 className="text-lg font-semibold text-gray-700">Барлық тауарлар ({filteredPerfumes.length})</h2>
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4 gap-4">
+            <h2 className="text-lg font-semibold text-gray-700 whitespace-nowrap">Барлық тауарлар ({sortedPerfumes.length})</h2>
             
-            {/* Іздеу және Фильтр блогы */}
-            <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            {/* Іздеу, Фильтр және Сұрыптау блогы */}
+            <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
               <input 
                 type="text" 
                 placeholder="Атауы немесе бренд..." 
@@ -288,6 +299,16 @@ export default function AdminDashboard() {
                 <option value="Мужской">Мужской</option>
                 <option value="Женский">Женский</option>
                 <option value="Унисекс">Унисекс</option>
+              </select>
+              <select 
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="w-full sm:w-40 border border-gray-300 p-2 rounded text-sm focus:ring-2 focus:ring-blue-500 outline-none font-medium"
+              >
+                <option value="new">Ең жаңалары</option>
+                <option value="old">Ескілері</option>
+                <option value="az">А-Я (Атауы)</option>
+                <option value="za">Я-А (Атауы)</option>
               </select>
             </div>
           </div>
@@ -322,7 +343,7 @@ export default function AdminDashboard() {
             </div>
           )}
           
-          {visibleCount < filteredPerfumes.length && (
+          {visibleCount < sortedPerfumes.length && (
             <div className="mt-6 flex justify-center">
               <button 
                 onClick={() => setVisibleCount(prev => prev + 20)}
